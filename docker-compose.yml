@@ -1,14 +1,33 @@
-version: '3.1'
+version: "3.1"
+
+networks:
+    laravel-net:
+        name: laravel
+        driver: bridge
 
 services:
+    db:
+        image: mysql:8
+        restart: always
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: homestead
+            MYSQL_USER: example
+            MYSQL_PASSWORD: secret2
 
-  db:
-    image: mysql
-    # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
-    # (this is just an example, not intended to be a production configuration)
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    ports:
-        - 3306:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: example
+    phpmyadmin:
+        build:
+            context: ./docker/phpMyAdmin
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - 8180:80
+        depends_on:
+            - db
+        environment:
+            - PMA_ARBITRARY=1
+            - UPLOAD_LIMIT=1G
+        networks:
+            - laravel-net
